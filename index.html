@@ -4,16 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WPM | Speed Reader</title>
+<script>
+  // Apply a saved theme before first paint to avoid a flash.
+  try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+</script>
 <style>
   :root {
     --bg: #f6f5f2; --panel: #ffffff; --text: #1d1d1f; --muted: #8a8a8e;
-    --line: #dcdcdf; --pivot: #e0322b; --accent: #2a62d6; --hl: #e6e6e9;
+    --line: #dcdcdf; --pivot: #e0322b; --accent: #c62f28; --hl: #e6e6e9;
+    color-scheme: light;
   }
+  /* Dark follows the system unless the toggle has picked a theme (data-theme on <html>). */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #141416; --panel: #1e1e21; --text: #ececee; --muted: #8a8a8e;
-      --line: #333338; --pivot: #ff5a4f; --accent: #6b9bff; --hl: #36363c;
+      --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #36363c;
+      color-scheme: dark;
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --panel: #1e1e21; --text: #ececee; --muted: #8a8a8e;
+    --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #36363c;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
   body {
@@ -56,9 +68,11 @@
   }
   button svg { width: 16px; height: 16px; flex: none; }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 136px; }
+  input { accent-color: var(--accent); } /* slider and checkbox */
   header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   header h1 { margin: 0; }
   header h1 .bar { color: var(--pivot); }
+  .header-actions { display: flex; gap: 4px; }
   .icon { padding: 6px; border: none; background: none; color: var(--muted); line-height: 0; }
   .icon:hover { color: var(--text); }
   .icon svg { width: 22px; height: 22px; }
@@ -72,7 +86,19 @@
   dialog .inner { padding: 16px 20px 20px; }
   dialog .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   dialog h2 { font-size: 17px; margin: 0; }
-  .opt { display: flex; align-items: center; gap: 6px; }
+  .opt { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  /* Custom checkbox: rounded box with a smaller tick inset from the edges. */
+  .opt input {
+    appearance: none; flex: none; width: 22px; height: 22px; margin: 0; cursor: pointer;
+    display: grid; place-content: center;
+    border: 2px solid var(--muted); border-radius: 7px; background: var(--panel);
+  }
+  .opt input:checked { background: var(--accent); border-color: var(--accent); }
+  .opt input:checked::after {
+    content: ""; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+  }
+  .opt input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .wpm { display: flex; align-items: center; gap: 10px; margin-left: auto; }
   .wpm input { width: 180px; }
   .wpm output { font-variant-numeric: tabular-nums; min-width: 72px; }
@@ -99,9 +125,12 @@
 <main>
   <header>
     <h1>WPM <span class="bar">|</span> Speed Reader</h1>
-    <button class="icon" id="openSettings" aria-label="Settings" title="Settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <div class="header-actions">
+      <button class="icon" id="theme" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+      <button class="icon" id="openSettings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
   </header>
 
   <div class="reader"><div class="word" id="word"><span class="l"></span><span class="p"></span><span class="r"></span></div></div>
@@ -168,6 +197,22 @@ const ICONS = {
 };
 const setPlayButton = (icon, label) => $('play').innerHTML = ICONS[icon] + label;
 
+const strokeSvg = inner => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const SUN = strokeSvg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>');
+const MOON = strokeSvg('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>');
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+const isDark = () => (document.documentElement.dataset.theme || (systemDark.matches ? 'dark' : 'light')) === 'dark';
+// Show the sun in dark mode (click for light) and the moon in light mode.
+const updateThemeIcon = () => $('theme').innerHTML = isDark() ? SUN : MOON;
+updateThemeIcon();
+systemDark.onchange = updateThemeIcon;
+$('theme').onclick = () => {
+  const t = isDark() ? 'light' : 'dark';
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('theme', t); } catch {}
+  updateThemeIcon();
+};
+
 let words = [];   // { text, pause, end, start, stop } — pause is a multiplier on the base delay; end marks a sentence end;
                   // start/stop are character offsets in the text box
 let i = 0;
@@ -176,6 +221,7 @@ let wpm = 300;
 let stopping = false;    // pause requested; waiting for the sentence to finish
 let resumeNext = false;  // stopped on a sentence end, so resume from the next word
 let playing = false;     // the text box highlight is hidden while playing
+let smoothScroll = false; // jump straight to the saved word on page load, then scroll smoothly
 
 try { wpm = +localStorage.getItem('wpm') || 300; } catch {}
 try { $('sentence').checked = localStorage.getItem('sentenceStop') !== '0'; } catch {}
@@ -231,7 +277,7 @@ function highlight(on) {
   const m = bd.querySelector('mark');
   if (m && document.activeElement !== ta &&
       (m.offsetTop < ta.scrollTop || m.offsetTop + m.offsetHeight > ta.scrollTop + ta.clientHeight)) {
-    ta.scrollTo({ top: m.offsetTop - ta.clientHeight / 3, behavior: 'smooth' });
+    ta.scrollTo({ top: m.offsetTop - ta.clientHeight / 3, behavior: smoothScroll ? 'smooth' : 'instant' });
   }
 }
 
@@ -371,6 +417,7 @@ try { savedPos = +localStorage.getItem('pos') || 0; } catch {}
 load();
 i = Math.min(savedPos, Math.max(words.length - 1, 0));
 render();
+smoothScroll = true;
 </script>
 </body>
 </html>

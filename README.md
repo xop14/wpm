@@ -27,7 +27,7 @@ Paste text into the box, set the speed, and press **Play**.
 - **Paste** / **Clear** buttons for the text box
 - When stopped, the current word is highlighted in the text box, which scrolls to it
 - Text and reading position are saved across refreshes
-- Follows system light/dark mode
+- Light/dark mode: follows the system until toggled with the sun/moon icon; the choice is remembered
 
 ## Limitations
 
