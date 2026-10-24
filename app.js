@@ -208,7 +208,13 @@ $('text').oninput = saveText;
 $('text').onscroll = () => $('backdrop').scrollTop = $('text').scrollTop;
 $('paste').onclick = async () => {
   try { $('text').value = await navigator.clipboard.readText(); }
-  catch { alert('Could not read the clipboard. Paste into the box with ⌘V instead.'); return; }
+  catch {
+    const how = matchMedia('(pointer: coarse)').matches
+      ? 'tap and hold in the text box and choose Paste'
+      : 'click in the text box and press ⌘V';
+    alert(`Could not read the clipboard. Instead, ${how}.`);
+    return;
+  }
   saveText();
 };
 $('clear').onclick = () => { $('text').value = ''; saveText(); $('text').focus(); };
