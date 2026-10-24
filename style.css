@@ -50,6 +50,7 @@ h1 { font-size: 20px; font-weight: 600; margin: 0 0 20px; }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 20px 0; }
+.buttons { display: flex; gap: 12px; }
 button {
   font: inherit; padding: 8px 16px; border-radius: 8px; cursor: pointer;
   border: 1px solid var(--line); background: var(--panel); color: var(--text);
@@ -58,6 +59,8 @@ button {
 button svg { width: 16px; height: 16px; flex: none; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 136px; }
 input { accent-color: var(--accent); } /* slider and checkbox */
+/* Red focus ring instead of the browser's default blue. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 header h1 { margin: 0; }
 header h1 .bar { color: var(--pivot); }
@@ -87,7 +90,6 @@ dialog h2 { font-size: 17px; margin: 0; }
   content: ""; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0;
   transform: translateY(-1px) rotate(45deg);
 }
-.opt input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wpm { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .wpm input { width: 180px; }
 .wpm output { font-variant-numeric: tabular-nums; min-width: 72px; }
@@ -104,7 +106,21 @@ textarea {
   position: relative; display: block; width: 100%; min-height: 200px; resize: vertical;
   color: var(--text); background: transparent; border-color: var(--line);
 }
+textarea:focus { outline: none; border-color: var(--accent); } /* softer than a ring while typing */
 .backdrop { position: absolute; inset: 0; overflow: hidden; color: transparent; }
 .backdrop mark { background: var(--hl); color: transparent; border-radius: 3px; }
 .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
 kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+
+/* Phones: keep the three control buttons on one row; WPM wraps below. */
+@media (max-width: 600px) {
+  .buttons { width: 100%; gap: 8px; }
+  .buttons button { flex: 1 1 auto; min-width: 0; padding: 8px 10px; white-space: nowrap; }
+  .wpm { margin-left: 0; width: 100%; }
+  .wpm input { flex: 1; width: auto; }
+}
+/* Narrow phones: icon-only Sentence and Restart so the row fits. */
+@media (max-width: 400px) {
+  .buttons .label { display: none; }
+  .buttons button:not(.primary) { flex: none; padding: 8px 14px; }
+}

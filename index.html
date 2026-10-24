@@ -27,15 +27,17 @@
   <div class="status"><span id="pos">0 / 0</span><span id="remaining"></span></div>
 
   <div class="controls card">
-    <button class="primary" id="play">Play</button>
-    <button id="back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
-      Sentence
-    </button>
-    <button id="restart">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      Restart
-    </button>
+    <div class="buttons">
+      <button class="primary" id="play">Play</button>
+      <button id="back" aria-label="Sentence" title="Sentence">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        <span class="label">Sentence</span>
+      </button>
+      <button id="restart" aria-label="Restart" title="Restart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span class="label">Restart</span>
+      </button>
+    </div>
     <label class="wpm">WPM
       <input type="range" id="speed" min="100" max="1000" step="25" value="300">
       <output id="speedVal">300</output>
