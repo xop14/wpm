@@ -7,12 +7,12 @@
 <style>
   :root {
     --bg: #f6f5f2; --panel: #ffffff; --text: #1d1d1f; --muted: #8a8a8e;
-    --line: #dcdcdf; --pivot: #e0322b; --accent: #2a62d6;
+    --line: #dcdcdf; --pivot: #e0322b; --accent: #2a62d6; --hl: #e6e6e9;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #141416; --panel: #1e1e21; --text: #ececee; --muted: #8a8a8e;
-      --line: #333338; --pivot: #ff5a4f; --accent: #6b9bff;
+      --line: #333338; --pivot: #ff5a4f; --accent: #6b9bff; --hl: #36363c;
     }
   }
   * { box-sizing: border-box; }
@@ -47,12 +47,15 @@
   .progress div { height: 100%; width: 0; background: var(--accent); }
   .status { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
 
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
   .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 20px 0; }
   button {
     font: inherit; padding: 8px 16px; border-radius: 8px; cursor: pointer;
     border: 1px solid var(--line); background: var(--panel); color: var(--text);
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 90px; }
+  button svg { width: 16px; height: 16px; flex: none; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 136px; }
   header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   header h1 { margin: 0; }
   header h1 .bar { color: var(--pivot); }
@@ -74,11 +77,20 @@
   .wpm input { width: 180px; }
   .wpm output { font-variant-numeric: tabular-nums; min-width: 72px; }
 
-  textarea {
-    width: 100%; min-height: 200px; padding: 12px; resize: vertical;
-    font: inherit; color: var(--text); background: var(--panel);
-    border: 1px solid var(--line); border-radius: 8px;
+  .text-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
+  .text-actions button { padding: 4px 12px; font-size: 14px; }
+  /* The textarea is transparent over a backdrop that mirrors its text, so the current word can be highlighted. */
+  .text-wrap { position: relative; background: var(--panel); border-radius: 8px; }
+  textarea, .backdrop {
+    font: inherit; padding: 12px; border: 1px solid transparent; border-radius: 8px;
+    white-space: pre-wrap; overflow-wrap: break-word; scrollbar-gutter: stable;
   }
+  textarea {
+    position: relative; display: block; width: 100%; min-height: 200px; resize: vertical;
+    color: var(--text); background: transparent; border-color: var(--line);
+  }
+  .backdrop { position: absolute; inset: 0; overflow: hidden; color: transparent; }
+  .backdrop mark { background: var(--hl); color: transparent; border-radius: 3px; }
   .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
   kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
 </style>
@@ -96,10 +108,16 @@
   <div class="progress"><div id="bar"></div></div>
   <div class="status"><span id="pos">0 / 0</span><span id="remaining"></span></div>
 
-  <div class="controls">
+  <div class="controls card">
     <button class="primary" id="play">Play</button>
-    <button id="back">« Sentence</button>
-    <button id="restart">Restart</button>
+    <button id="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      Sentence
+    </button>
+    <button id="restart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Restart
+    </button>
     <label class="wpm">WPM
       <input type="range" id="speed" min="100" max="1000" step="25" value="300">
       <output id="speedVal">300</output>
@@ -118,7 +136,22 @@
     </div>
   </dialog>
 
-  <textarea id="text" placeholder="Paste text here…"></textarea>
+  <div class="card">
+    <div class="text-actions">
+      <button id="paste">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        Paste
+      </button>
+      <button id="clear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Clear
+      </button>
+    </div>
+    <div class="text-wrap">
+      <div class="backdrop" id="backdrop"></div>
+      <textarea id="text" placeholder="Paste text here…"></textarea>
+    </div>
+  </div>
   <div class="hint">
     <kbd>Space</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> step word · <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> step sentence · <kbd>↑</kbd> <kbd>↓</kbd> speed ±25
   </div>
@@ -128,12 +161,21 @@
 const $ = id => document.getElementById(id);
 const [leftEl, pivotEl, rightEl] = $('word').children;
 
-let words = [];   // { text, pause, end } — pause is a multiplier on the base delay; end marks a sentence end
+const svg = inner => `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">${inner}</svg>`;
+const ICONS = {
+  play: svg('<polygon points="6 3 20 12 6 21 6 3"/>'),
+  pause: svg('<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'),
+};
+const setPlayButton = (icon, label) => $('play').innerHTML = ICONS[icon] + label;
+
+let words = [];   // { text, pause, end, start, stop } — pause is a multiplier on the base delay; end marks a sentence end;
+                  // start/stop are character offsets in the text box
 let i = 0;
 let timer = null;
 let wpm = 300;
 let stopping = false;    // pause requested; waiting for the sentence to finish
 let resumeNext = false;  // stopped on a sentence end, so resume from the next word
+let playing = false;     // the text box highlight is hidden while playing
 
 try { wpm = +localStorage.getItem('wpm') || 300; } catch {}
 try { $('sentence').checked = localStorage.getItem('sentenceStop') !== '0'; } catch {}
@@ -159,21 +201,38 @@ function pivotIndex(len) {
 
 function parse(text) {
   const out = [];
-  for (const para of text.split(/\n\s*\n/)) {
-    const tokens = para.split(/\s+/).filter(Boolean);
-    tokens.forEach(t => {
-      let pause = 1, end = false;
-      if (/[.!?]["')\]]*$/.test(t)) { pause = 2.2; end = true; }
-      else if (/[,;:–—]["')\]]*$/.test(t)) pause = 1.5;
-      if (t.length > 8) pause += 0.3;
-      out.push({ text: t, pause, end });
-    });
-    if (out.length) { // paragraph break
-      out[out.length - 1].pause += 1.5;
-      out[out.length - 1].end = true;
-    }
+  const paraEnd = w => { w.pause += 1.5; w.end = true; };
+  for (const m of text.matchAll(/\S+/g)) {
+    const t = m[0];
+    const prev = out[out.length - 1];
+    if (prev && /\n\s*\n/.test(text.slice(prev.stop, m.index))) paraEnd(prev);
+    let pause = 1, end = false;
+    if (/[.!?]["')\]]*$/.test(t)) { pause = 2.2; end = true; }
+    else if (/[,;:–—]["')\]]*$/.test(t)) pause = 1.5;
+    if (t.length > 8) pause += 0.3;
+    out.push({ text: t, pause, end, start: m.index, stop: m.index + t.length });
   }
+  if (out.length) paraEnd(out[out.length - 1]);
   return out;
+}
+
+const escapeHTML = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
+// Mirror the textarea text in the backdrop behind it, with the current word wrapped in <mark>.
+// Shown only while stopped; the backdrop is emptied otherwise.
+function highlight(on) {
+  const w = on && words[i], ta = $('text'), bd = $('backdrop');
+  if (!w) { bd.textContent = ''; return; }
+  const text = ta.value;
+  bd.innerHTML = escapeHTML(text.slice(0, w.start)) + '<mark>' + escapeHTML(w.text) + '</mark>' +
+    escapeHTML(text.slice(w.stop)).replace(/\n$/, '\n\n'); // keep a trailing newline's line height
+  bd.scrollTop = ta.scrollTop;
+  // Keep the word in view, unless the user is typing in the box.
+  const m = bd.querySelector('mark');
+  if (m && document.activeElement !== ta &&
+      (m.offsetTop < ta.scrollTop || m.offsetTop + m.offsetHeight > ta.scrollTop + ta.clientHeight)) {
+    ta.scrollTo({ top: m.offsetTop - ta.clientHeight / 3, behavior: 'smooth' });
+  }
 }
 
 function show(w) {
@@ -190,6 +249,7 @@ function show(w) {
 
 function render() {
   show(words[i]);
+  highlight(!playing);
   const n = words.length;
   $('pos').textContent = `${Math.min(i + 1, n)} / ${n}`;
   $('bar').style.width = n ? `${(i + 1) / n * 100}%` : '0';
@@ -213,15 +273,17 @@ function play() {
   if (!words.length) return;
   if (resumeNext) i++;
   if (i >= words.length - 1) i = 0;
-  $('play').textContent = 'Pause';
+  setPlayButton('pause', 'Pause');
+  playing = true;
   tick();
 }
 
 function pause() {
   clearTimeout(timer);
   timer = null;
-  stopping = resumeNext = false;
-  $('play').textContent = 'Play';
+  stopping = resumeNext = playing = false;
+  setPlayButton('play', 'Play');
+  highlight(true);
 }
 
 // Pause from the play button or Space: optionally let the current sentence finish first.
@@ -230,7 +292,7 @@ function stop() {
   if (!$('sentence').checked || stopping) return pause();
   if (words[i].end) { pause(); resumeNext = true; return; }
   stopping = true;
-  $('play').textContent = 'Finishing…';
+  setPlayButton('pause', 'Finishing…');
 }
 
 function load() {
@@ -281,10 +343,18 @@ $('sentence').onchange = e => { try { localStorage.setItem('sentenceStop', e.tar
 $('back').onclick = backSentence;
 $('restart').onclick = load;
 $('speed').oninput = e => setSpeed(+e.target.value);
-$('text').oninput = () => {
+function saveText() {
   try { localStorage.setItem('text', $('text').value); } catch {}
   load();
+}
+$('text').oninput = saveText;
+$('text').onscroll = () => $('backdrop').scrollTop = $('text').scrollTop;
+$('paste').onclick = async () => {
+  try { $('text').value = await navigator.clipboard.readText(); }
+  catch { alert('Could not read the clipboard. Paste into the box with ⌘V instead.'); return; }
+  saveText();
 };
+$('clear').onclick = () => { $('text').value = ''; saveText(); $('text').focus(); };
 
 document.addEventListener('keydown', e => {
   if (e.target === $('text') || $('settings').open) return;
