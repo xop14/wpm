@@ -1,4 +1,4 @@
-# Speed Reader
+# WPM | Speed Reader
 
 A one-word-at-a-time speed reader (RSVP — Rapid Serial Visual Presentation), like Spritz.
 
