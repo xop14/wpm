@@ -21,6 +21,7 @@ Paste text into the box, set the speed, and press **Play**.
 - Speed: 100–1000 WPM (remembered between visits)
 - Longer pauses at sentence ends (~2.2×), commas/semicolons (~1.5×), long words, and paragraph breaks
 - Progress bar and time remaining
+- **Stop at sentence end** (Settings, via the cog icon; on by default): pausing lets the current sentence finish first, then resumes from the next sentence. Press pause again to stop immediately.
 - **« 10** jumps back ten words
 - Follows system light/dark mode
 
