@@ -14,6 +14,7 @@ Paste text into the box, set the speed, and press **Play**.
 | --- | --- |
 | Space | Play / pause |
 | ← / → | Step back / forward one word |
+| Shift + ← / → | Step back / forward one sentence |
 | ↑ / ↓ | Speed ±25 WPM |
 
 ## Behaviour
@@ -22,7 +23,7 @@ Paste text into the box, set the speed, and press **Play**.
 - Longer pauses at sentence ends (~2.2×), commas/semicolons (~1.5×), long words, and paragraph breaks
 - Progress bar and time remaining
 - **Stop at sentence end** (Settings, via the cog icon; on by default): pausing lets the current sentence finish first, then resumes from the next sentence. Press pause again to stop immediately.
-- **« 10** jumps back ten words
+- **« Sentence** jumps to the start of the current sentence, or the previous sentence if already at the start of one
 - Follows system light/dark mode
 
 ## Limitations

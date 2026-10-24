@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Speed Reader</title>
+<title>WPM | Speed Reader</title>
 <style>
   :root {
     --bg: #f6f5f2; --panel: #ffffff; --text: #1d1d1f; --muted: #8a8a8e;
@@ -55,6 +55,7 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 90px; }
   header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   header h1 { margin: 0; }
+  header h1 .bar { color: var(--pivot); }
   .icon { padding: 6px; border: none; background: none; color: var(--muted); line-height: 0; }
   .icon:hover { color: var(--text); }
   .icon svg { width: 22px; height: 22px; }
@@ -85,7 +86,7 @@
 <body>
 <main>
   <header>
-    <h1>Speed Reader</h1>
+    <h1>WPM <span class="bar">|</span> Speed Reader</h1>
     <button class="icon" id="openSettings" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -97,7 +98,7 @@
 
   <div class="controls">
     <button class="primary" id="play">Play</button>
-    <button id="back">« 10</button>
+    <button id="back">« Sentence</button>
     <button id="restart">Restart</button>
     <label class="wpm">WPM
       <input type="range" id="speed" min="100" max="1000" step="25" value="300">
@@ -119,7 +120,7 @@
 
   <textarea id="text" placeholder="Paste text here…"></textarea>
   <div class="hint">
-    <kbd>Space</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> step word · <kbd>↑</kbd> <kbd>↓</kbd> speed ±25
+    <kbd>Space</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> step word · <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> step sentence · <kbd>↑</kbd> <kbd>↓</kbd> speed ±25
   </div>
 </main>
 
@@ -139,10 +140,13 @@ try { $('sentence').checked = localStorage.getItem('sentenceStop') !== '0'; } ca
 $('speed').value = wpm;
 $('speedVal').textContent = wpm;
 
-$('text').value = "Rapid serial visual presentation shows you one word at a time in a fixed spot. " +
+const sample = "Rapid serial visual presentation shows you one word at a time in a fixed spot. " +
   "The red letter is the optimal recognition point, where your eye naturally lands. " +
   "Because your eyes never have to move, you can read much faster than usual.\n\n" +
   "Paste your own text here, pick a speed, and press play.";
+let saved = null;
+try { saved = localStorage.getItem('text'); } catch {}
+$('text').value = saved ?? sample;
 
 // Spritz-style pivot position: roughly a third of the way in, capped.
 function pivotIndex(len) {
@@ -191,6 +195,7 @@ function render() {
   $('bar').style.width = n ? `${(i + 1) / n * 100}%` : '0';
   const secs = Math.round((n - i - 1) * 60 / wpm);
   $('remaining').textContent = n ? `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')} left` : '';
+  try { localStorage.setItem('pos', i); } catch {}
 }
 
 function tick() {
@@ -241,6 +246,25 @@ function step(d) {
   render();
 }
 
+// Jump to the start of the current sentence, or the previous one if already at a start.
+function backSentence() {
+  const startOf = j => { while (j > 0 && !words[j - 1].end) j--; return j; };
+  let s = startOf(i);
+  if (s === i) s = startOf(Math.max(0, i - 1));
+  pause();
+  i = s;
+  render();
+}
+
+// Jump to the start of the next sentence (or the last word if there isn't one).
+function forwardSentence() {
+  let j = i + 1;
+  while (j < words.length && !words[j - 1].end) j++;
+  pause();
+  i = Math.min(j, words.length - 1);
+  render();
+}
+
 function setSpeed(v) {
   wpm = Math.max(100, Math.min(1000, v));
   $('speed').value = wpm;
@@ -254,21 +278,29 @@ $('openSettings').onclick = () => { pause(); $('settings').showModal(); };
 $('closeSettings').onclick = () => $('settings').close();
 $('settings').onclick = e => { if (e.target === $('settings')) $('settings').close(); }; // backdrop click
 $('sentence').onchange = e => { try { localStorage.setItem('sentenceStop', e.target.checked ? '1' : '0'); } catch {} };
-$('back').onclick = () => step(-10);
+$('back').onclick = backSentence;
 $('restart').onclick = load;
 $('speed').oninput = e => setSpeed(+e.target.value);
-$('text').oninput = load;
+$('text').oninput = () => {
+  try { localStorage.setItem('text', $('text').value); } catch {}
+  load();
+};
 
 document.addEventListener('keydown', e => {
   if (e.target === $('text') || $('settings').open) return;
   if (e.code === 'Space') { e.preventDefault(); timer ? stop() : play(); }
-  else if (e.key === 'ArrowLeft') step(-1);
-  else if (e.key === 'ArrowRight') step(1);
+  else if (e.key === 'ArrowLeft') e.shiftKey ? backSentence() : step(-1);
+  else if (e.key === 'ArrowRight') e.shiftKey ? forwardSentence() : step(1);
   else if (e.key === 'ArrowUp') { e.preventDefault(); setSpeed(wpm + 25); }
   else if (e.key === 'ArrowDown') { e.preventDefault(); setSpeed(wpm - 25); }
 });
 
+// Read the saved position before load(), which resets it to 0.
+let savedPos = 0;
+try { savedPos = +localStorage.getItem('pos') || 0; } catch {}
 load();
+i = Math.min(savedPos, Math.max(words.length - 1, 0));
+render();
 </script>
 </body>
 </html>
