@@ -1,0 +1,29 @@
+# Speed Reader
+
+A one-word-at-a-time speed reader (RSVP — Rapid Serial Visual Presentation), like Spritz.
+
+Each word is shown in a fixed spot with one letter highlighted in red — the **optimal recognition point**, where the eye naturally lands. Because your eyes don't have to move along a line, you can read faster.
+
+## Usage
+
+Open `index.html` in a browser. No build step or dependencies.
+
+Paste text into the box, set the speed, and press **Play**.
+
+| Key | Action |
+| --- | --- |
+| Space | Play / pause |
+| ← / → | Step back / forward one word |
+| ↑ / ↓ | Speed ±25 WPM |
+
+## Behaviour
+
+- Speed: 100–1000 WPM (remembered between visits)
+- Longer pauses at sentence ends (~2.2×), commas/semicolons (~1.5×), long words, and paragraph breaks
+- Progress bar and time remaining
+- **« 10** jumps back ten words
+- Follows system light/dark mode
+
+## Limitations
+
+Words are split on whitespace, so languages without spaces (e.g. Japanese) display as one long "word". `Intl.Segmenter` could fix this.
