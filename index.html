@@ -11,20 +11,20 @@
 <style>
   :root {
     --bg: #f6f5f2; --panel: #ffffff; --text: #1d1d1f; --muted: #8a8a8e;
-    --line: #dcdcdf; --pivot: #e0322b; --accent: #c62f28; --hl: #e6e6e9;
+    --line: #dcdcdf; --pivot: #e0322b; --accent: #c62f28; --hl: #f7cfcb;
     color-scheme: light;
   }
   /* Dark follows the system unless the toggle has picked a theme (data-theme on <html>). */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #141416; --panel: #1e1e21; --text: #ececee; --muted: #8a8a8e;
-      --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #36363c;
+      --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #7d2e29;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #141416; --panel: #1e1e21; --text: #ececee; --muted: #8a8a8e;
-    --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #36363c;
+    --line: #333338; --pivot: #ff5a4f; --accent: #c93a32; --hl: #7d2e29;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
