@@ -124,3 +124,7 @@ kbd { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-
   .buttons .label { display: none; }
   .buttons button:not(.primary) { flex: none; padding: 8px 14px; }
 }
+/* Touch-only devices have no keyboard shortcuts to show. */
+@media (hover: none) and (pointer: coarse) {
+  .hint { display: none; }
+}
