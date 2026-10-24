@@ -1,5 +1,7 @@
 # WPM | Speed Reader
 
+**Live app:** https://xop14.github.io/wpm/
+
 A one-word-at-a-time speed reader (RSVP — Rapid Serial Visual Presentation), like Spritz.
 
 Each word is shown in a fixed spot with one letter highlighted in red — the **optimal recognition point**, where the eye naturally lands. Because your eyes don't have to move along a line, you can read faster.
